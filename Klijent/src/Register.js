@@ -6,7 +6,6 @@ export const Register = () =>{
     const [email, setEmail] = useState("");
     const [naziv, setNaziv] = useState("");
     const [lozinka, setLozinka] = useState("");
-    const [temp, setTemp] = useState("");
 
     function zaNaziv(e) {
         setNaziv(e.target.value);
@@ -20,19 +19,11 @@ export const Register = () =>{
         setLozinka(e.target.value);
     }
 
-    function zaTemp(e) {
-        setTemp(e.target.value);
-    }
     
-    function handleLogin(e) {
+    function handleRegister(e) {
         e.preventDefault();
-    
-        if (password !== temp) {
-           alert("Lozinka se ne podudara!");
-            return;
-        }
 
-        fetch("http://localhost:5000/api/register", {
+        fetch("http://localhost:5012/api/register", {
             method: "POST",
             body: JSON.stringify({
                 naziv: naziv,
@@ -42,8 +33,7 @@ export const Register = () =>{
             headers: {"Content-type": "application/json;charset=UTF-8"}
         })
         .then((resp) => resp.json())
-        .then((data) => {
-            console.log("Registriran!");
+        .then(() => {
             navigate('/login'); 
         })
         .catch((err)=>console.log(err));
@@ -51,7 +41,7 @@ export const Register = () =>{
 
     return(
     <div>
-        <form onSubmit={(e) => {handleLogin(e);}}>
+        <form onSubmit={handleRegister}>
         <label htmlFor="naziv">Naziv</label>
             <input
                 type="text"
@@ -76,15 +66,7 @@ export const Register = () =>{
                 onBlur={zaLozinku}
             ></input>
 
-            <label htmlFor="ponoviLozinku">Ponovi lozinku</label>
-            <input
-                type="password"
-                value={temp}
-                onChange={setTemp}
-                onBlur={setTemp}
-            ></input>
-
-            <button type="submit">Registriraj se</button>
+            <button type="submit" onClick={handleRegister}>Registriraj se</button>
         </form>
     </div>
     )

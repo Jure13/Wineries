@@ -12,32 +12,33 @@ import { Proizvod } from './modeli/Proizvod.js';
 
 
 const app = express();
-const db = mongoose.connect("mongodb://localhost:27017/chocolatedb") // pise chocolatedb jer mi jedino radi za dohvat podataka iz te davno kreirane 
-const port = 5000;
+
+mongoose.connect("mongodb+srv://jure:1234@cluster0.sjpfno2.mongodb.net/Wineries?retryWrites=true&w=majority")
+const port = 5012;
 
 const craftProducts = express.Router();
-const userRouter = express.Router();
+const userRouter = express.Router()
 
 app.use(cors())
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use("/api", userRouter);
 app.use("/api", craftProducts);
 
-// localhost:5000/api/
+// localhost:5012/api/
 
 //npm start app.js
 
 app.get('/', (req, res) => {
     res.send("Dobrodošli!");
- })
- 
+})
+
 
 // Korisnik
 
 function signJwt1(user_id) {
-    const token = jwt.sign({sub: user_id}, process.env.SECRET);
+    const token = jwt.sign({ sub: user_id }, process.env.SECRET);
     if (!token) return false;
     return token;
 }
@@ -45,10 +46,10 @@ function signJwt1(user_id) {
 function verifyJwt1(req, res, next) {
     const authorization = req.header('Authorization');
     const token = authorization ? authorization.split('Bearer ')[1] : undefined;
-    if(!token) {
+    if (!token) {
         return res.status(401).send("Unauthorized");
     }
-    jwt.verify(token, process.env.SECRET, (err, payload)=>{
+    jwt.verify(token, process.env.SECRET, (err, payload) => {
         if (err || !payload.sub) {
             return res.status(401).send("Unauthorized");
         }
@@ -57,7 +58,7 @@ function verifyJwt1(req, res, next) {
 }
 
 userRouter.route("/login").post((req, res) => {
-    Korisnik.find({email: req.body.email}, function (error, korisnici) { 
+    Korisnik.find({ email: req.body.email }, function (error, korisnici) {
         if (error || korisnici.length === 0) {
             return res.send(error);
         }
@@ -65,17 +66,17 @@ userRouter.route("/login").post((req, res) => {
             return res.send("Pogrešna lozinka!")
         }
         const token = signJwt1(korisnici[0]._id);
-        return res.json({accessToken: token, korisnik: korisnici[0].email});
+        return res.json({ accessToken: token, korisnik: korisnici[0].email, uloga: korisnici[0].uloga });
     })
 });
 
 userRouter.route('/register').post((req, res) => {
-    Korisnik.find({email: req.body.email}, function (error, korisnici) { 
+    Korisnik.find({ email: req.body.email }, function (error, korisnici) {
         if (error || korisnici.length > 0) {
             console.log(korisnici.length);
             return res.send(error);
         }
-        let korisnik = new Korisnik({ime: req.body.ime, email: req.body.email, lozinka: req.body.lozinka});
+        let korisnik = new Korisnik({ ime: req.body.ime, email: req.body.email, lozinka: req.body.lozinka });
         korisnik.save();
         return res.json(korisnik);
     })
@@ -88,7 +89,7 @@ craftProducts.route('/tvrtka').post(verifyJwt1, (req, res) => {
     tvrtka.save();
     return res.status(201).json(tvrtka);
 });
-    
+
 craftProducts.route('/proizvod').post(verifyJwt1, (req, res) => {
     const proizvod = new Proizvod(req.body);
     proizvod.save();
@@ -99,7 +100,7 @@ craftProducts.route('/proizvod').post(verifyJwt1, (req, res) => {
 
 craftProducts.route('/tvrtka').get((req, res) => {
     Tvrtka.find((err, proizvodi) => {
-        if(err) {
+        if (err) {
             res.send(err);
         }
         else {
@@ -109,11 +110,11 @@ craftProducts.route('/tvrtka').get((req, res) => {
 })
 
 craftProducts.get('/tvrtka/:nazivTvrtke', (req, res) => {
-    Tvrtka.find({naziv: req.params.nazivTvrtke}, (err, nazivTvrtke) => {
-        if(err){
+    Tvrtka.findOne({ nazivTvrtke: req.params.nazivTvrtke }, (err, nazivTvrtke) => {
+        if (err) {
             res.send(err);
         }
-        else{
+        else {
             return res.json(nazivTvrtke);
         }
     });
@@ -121,7 +122,7 @@ craftProducts.get('/tvrtka/:nazivTvrtke', (req, res) => {
 
 craftProducts.route('/proizvodiTvrtke/:nazivTvrtke').get((req, res) => {
     Proizvod.find({ nazivTvrtke: req.params.nazivTvrtke }, (err, proizvodi) => {
-        if(err) {
+        if (err) {
             res.send(err);
         }
         else {
@@ -131,8 +132,8 @@ craftProducts.route('/proizvodiTvrtke/:nazivTvrtke').get((req, res) => {
 });
 
 craftProducts.route('/vrsta/:boja').get((req, res) => {
-    Proizvod.find({vrsta: req.params.vrsta}, (err, proizvod) => {
-        if(err) {
+    Proizvod.find({ vrsta: req.params.vrsta }, (err, proizvod) => {
+        if (err) {
             res.send(err);
         }
         else {
@@ -143,21 +144,21 @@ craftProducts.route('/vrsta/:boja').get((req, res) => {
 
 craftProducts.route('/proizvodi').get((req, res) => {
     Proizvod.find((err, proizvodi) => {
-        if(err) {
+        if (err) {
             res.send(err);
         }
-        else {        
+        else {
             return res.json(proizvodi);
         }
     })
 });
 
 craftProducts.get('/proizvodi/:nazivProizvoda', (req, res) => {
-    Proizvod.find({nazivProizvoda: req.params.nazivProizvoda}, (err, data) => {
-        if(err){
+    Proizvod.findOne({ nazivProizvoda: req.params.nazivProizvoda }, (err, data) => {
+        if (err) {
             res.send(err);
         }
-        else{
+        else {
             return res.json(data);
         }
     });
@@ -169,16 +170,16 @@ craftProducts.route('/tvrtka/update/:id').put(verifyJwt1, (req, res) => {
     try {
         const nazivTvrtke = req.params.id;
         const update = req.body;
-        const options = {new: true};
+        const options = { new: true };
 
         Tvrtka.findByIdAndUpdate(nazivTvrtke, update, options, (err, firma) => {
-            if(err) {
+            if (err) {
                 res.send(err);
-            } else{
+            } else {
                 res.json(firma);
             }
         });
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 });
@@ -187,16 +188,16 @@ craftProducts.route('/proizvod/update/:nazivProizvoda').put(verifyJwt1, (req, re
     try {
         const nazivProizvoda = req.params.nazivProizvoda;
         const update = req.body;
-        const options = {new: true};
+        const options = { new: true };
 
         Proizvod.findByIdAndUpdate(nazivProizvoda, update, options, (err, vino) => {
-            if(err) {
+            if (err) {
                 res.send(err);
-            } else{
+            } else {
                 res.json(vino);
             }
         });
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 });
@@ -204,19 +205,19 @@ craftProducts.route('/proizvod/update/:nazivProizvoda').put(verifyJwt1, (req, re
 // Delete
 
 craftProducts.get('/provjeriProizvod/:nazivTvrtke', (req, res) => {
-    Proizvod.find({nazivTvrtke: req.params.nazivTvrtke}, (err, firma) => {
-        if(err){
+    Proizvod.find({ nazivTvrtke: req.params.nazivTvrtke }, (err, firma) => {
+        if (err) {
             res.send(err);
         }
-        else{
+        else {
             return res.json(firma);
         }
     });
 });
 
 craftProducts.route('/tvrtka/:nazivTvrtke').delete(verifyJwt1, (req, res) => {
-    Tvrtka.remove({naziv: req.params.nazivTvrtke}, (err, firma) => {
-        if(err) {
+    Tvrtka.remove({ naziv: req.params.nazivTvrtke }, (err, firma) => {
+        if (err) {
             res.send(err);
         } else {
             res.json(firma);
@@ -225,8 +226,9 @@ craftProducts.route('/tvrtka/:nazivTvrtke').delete(verifyJwt1, (req, res) => {
 });
 
 craftProducts.route('/proizvod/:nazivProizvoda').delete(verifyJwt1, (req, res) => {
-    Proizvod.remove({nazivProizvoda: req.params.nazivProizvoda}, (err, proizvod) => {
-        if(err) {
+    console.log(req.params.nazivProizvoda);
+    Proizvod.remove({ nazivProizvoda: req.params.nazivProizvoda }, (err, proizvod) => {
+        if (err) {
             res.send(err);
         } else {
             res.json(proizvod);
@@ -235,6 +237,6 @@ craftProducts.route('/proizvod/:nazivProizvoda').delete(verifyJwt1, (req, res) =
 });
 
 
-app.listen(port, ()=>{
+app.listen(port, () => {
     console.log("Running on port " + port);
 });

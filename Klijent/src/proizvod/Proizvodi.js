@@ -8,17 +8,17 @@ const Proizvodi = () => {
     const {korisnik, setKorisnik} = useContext(UserContext);
 
     useEffect(() => {
-        fetch("http://localhost:5000/api/proizvodi")
+        fetch("http://localhost:5012/api/proizvodi")
         .then((response) => response.json())
         .then((proizvodi) => { 
-            proizvodi = proizvodi.sort((a, b) =>(a.productName.toLowerCase() > b.productName.toLowerCase()) ? 1 : -1);
+            proizvodi = proizvodi.sort((a, b) =>(a.nazivProizvoda.toLowerCase() > b.nazivProizvoda.toLowerCase()) ? 1 : -1);
             setProizvodi(proizvodi) });
     },[]);
-
+console.log(proizvodi);
     return(
         <div className="search-params">
             <div>
-                { !korisnik ?
+            { korisnik === "" ?
                    <div>
                         <button onClick={() => navigate('/login')}>Prijava</button>
                         <button onClick={() => navigate('/register')}>Registracija</button>
@@ -44,7 +44,7 @@ const Proizvodi = () => {
                                 <td className="naziv">{p.nazivProizvoda}</td>
                             </Link>
                             <td>{p.vrsta}</td>
-                            <td>{p.vinarija}</td>
+                            <td>{p.nazivTvrtke}</td>
                         </tr>
                     )}
                 </tbody>

@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
-import {render} from "react-dom";
+import React, { useEffect, useState } from "react";
+import { render } from "react-dom";
 import SearchParams from "./SearchParams";
-import {Router, navigate} from "@reach/router";
+import { Router } from "@reach/router";
 import Login from "./Login";
 import Logout from "./Logout";
 import Register from "./Register";
@@ -20,44 +20,15 @@ import { UserContext } from "./UserContext";
 
 const App = () => {
     const [korisnik, setKorisnik] = useState("");
-    const [email, setEmail] = useState("");
-    const [lozinka, setLozinka] = useState("");
 
-    function zaEmail(e) {
-        setEmail(e.target.value);
-    }
+    useEffect(() => {
+        const korisnik = localStorage.getItem("email");
+        korisnik ? setKorisnik(korisnik) : setKorisnik("");
+    }, []);
     
-    function zaLozinku(e) {
-        setLozinka(e.target.value);
-    }
-
-    function handleLogin(e) {
-        e.preventDefault();
-    
-        fetch("http://localhost:5000/api/login", {
-            method: "POST",
-            body: JSON.stringify({
-                email: email,
-                lozinka: lozinka
-            }),
-            headers: {"Content-type": "application/json;charset=UTF-8"}
-        })
-        .then((resp)=>resp.json())
-        .then((data)=>{
-            if (data.accessToken) {
-                localStorage.setItem("token", data.accessToken);
-                setKorisnik(email);
-                navigate('/proizvodi');
-            } else {
-                console.log("Authentication error");
-            }
-        })
-        .catch((err)=>console.log(err));
-    }
-
-    return(
+    return (
         <div>
-            <UserContext.Provider value={{korisnik, setKorisnik}}>
+            <UserContext.Provider value={{ korisnik, setKorisnik }}>
                 <Router>
                     <SearchParams path="/" />
                     <Login path="/login" />
@@ -77,4 +48,4 @@ const App = () => {
     );
 }
 
-render(<App/>, document.getElementById("root"));
+render(<App />, document.getElementById("root"));

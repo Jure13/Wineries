@@ -8,7 +8,6 @@ const StvoriTvrtku = () => {
     const [godinaOsnutka, setGodinaOsnutka] = useState("");
     const [zemlja, setZemlja] = useState("");
     const [opis, setOpis] = useState("");
-    const {korisnik, setKorisnik} = useContext(UserContext);
 
 
     function zaOpis(e) {
@@ -34,7 +33,7 @@ const StvoriTvrtku = () => {
             Authorization: "Bearer " + localStorage.getItem("token")
         }};
         
-        fetch("http://localhost:5000/api/tvrtka", {
+        fetch("http://localhost:5012/api/tvrtka", {
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token"),
